@@ -1,4 +1,5 @@
 import Button from "./Button";
+import { supabase } from "../lib/supabase";
 
 export default function TaskInput({
   task,
@@ -17,17 +18,26 @@ export default function TaskInput({
       />
 
       <Button
-        variant="add"
-        onClick={() => {
-          setTasks([
-            ...tasks,
-            {
-              text: task,
-              completed: false,
-            },
-          ]);
-          setTask("");
-        }}
+  variant="add"
+  onClick={async () => {
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert([
+        {
+          text: task,
+          completed: false,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    setTasks([...tasks, data[0]]);
+    setTask("");
+  }}
       />
     </div>
   );

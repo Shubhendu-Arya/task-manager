@@ -1,4 +1,5 @@
 import Button from "./Button";
+import { supabase } from "../lib/supabase";
 
 export default function TaskItem({
   task,
@@ -29,31 +30,53 @@ export default function TaskItem({
 
       <div className="flex gap-5">
         <Button
-          variant="delete"
-          onClick={() => {
-            setTasks(tasks.filter((task, i) => i !== index));
-          }}
-        />
+  variant="delete"
+  onClick={async () => {
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", task.id);
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    setTasks(tasks.filter((t) => t.id !== task.id));
+  }}
+/>
 
         <Button
-          variant="save"
-          onClick={() => {
-            setTasks(
-              tasks.map((task, i) => {
-                if (i === index) {
-                  return {
-                    ...task,
-                    text: editText,
-                  };
-                }
-                return task;
-              })
-            );
+  variant="save"
+  onClick={async () => {
+    const { error } = await supabase
+      .from("tasks")
+      .update({
+        text: editText,
+      })
+      .eq("id", task.id);
 
-            setEditingIndex(null);
-            setEditText("");
-          }}
-        />
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    setTasks(
+      tasks.map((t) => {
+        if (t.id === task.id) {
+          return {
+            ...t,
+            text: editText,
+          };
+        }
+        return t;
+      })
+    );
+
+    setEditingIndex(null);
+    setEditText("");
+  }}
+/>
 
         <Button
           variant="edit"
@@ -64,21 +87,33 @@ export default function TaskItem({
         />
 
         <Button
-          variant="complete"
-          onClick={() => {
-            setTasks(
-              tasks.map((task, i) => {
-                if (i === index) {
-                  return {
-                    ...task,
-                    completed: !task.completed,
-                  };
-                }
-                return task;
-              })
-            );
-          }}
-        />
+  variant="complete"
+  onClick={async () => {
+    const { error } = await supabase
+      .from("tasks")
+      .update({
+        completed: !task.completed,
+      })
+      .eq("id", task.id);
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    setTasks(
+      tasks.map((t) => {
+        if (t.id === task.id) {
+          return {
+            ...t,
+            completed: !t.completed,
+          };
+        }
+        return t;
+      })
+    );
+  }}
+/>
       </div>
     </li>
   );
